@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def show_img_compar(img_1, img_2, title1, title2):
+def show_img_compare(img_1, img_2, title1, title2):
     """Show the comparison of two images.
 
     Input
@@ -31,3 +31,5 @@ def show_img_compar(img_1, img_2, title1, title2):
 
     f.tight_layout()
     plt.show()
+
+    return f, ax
