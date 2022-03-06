@@ -21,3 +21,4 @@ scipy==1.8.0
 six==1.16.0
 threadpoolctl==3.1.0
 tifffile==2022.2.9
+tqdm==4.63.0
