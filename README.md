@@ -9,6 +9,11 @@
 |![](https://i.ibb.co/P6rPpZP/color-mosaic.jpg)  |  ![](https://i.ibb.co/PxmjHHp/color-mosaic-iter-1-win-27.jpg)|
 |![](https://i.ibb.co/tK2PrjP/document.png)  |  ![](https://i.ibb.co/WBZtHRp/document-iter-2-win-7.jpg)|
 
+
+## Contributors
+
+[Monsij Biswal](https://github.com/monsij) & [Swetha Pillai](https://github.com/spillai20)
+
 ## References
 
 [1] Wang, B. and Chen, C.P., 2019, September. An effective background estimation method for shadows removal of document images. In 2019 IEEE International Conference on Image Processing (ICIP) (pp. 3611-3615). IEEE.
