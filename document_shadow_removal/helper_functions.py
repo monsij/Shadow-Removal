@@ -3,10 +3,7 @@
 Defines helper functions that are used in the document shadow
 """
 
-
 import matplotlib.pyplot as plt
-import numpy as np
-
 
 def show_img_compare(img_1, img_2, title1, title2):
     """Show the comparison of two images.
@@ -24,7 +21,7 @@ def show_img_compare(img_1, img_2, title1, title2):
     ax[0].imshow(img_1)
     ax[0].set_title(title1)
     ax[0].axis('off')
-    
+
     ax[1].imshow(img_2)
     ax[1].set_title(title2)
     ax[1].axis('off')
