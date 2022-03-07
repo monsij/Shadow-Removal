@@ -2,6 +2,13 @@
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/monsij/Shadow-Removal/HEAD)
 
+## Demo
+
+`Input`             |  `Output`
+:-------------------------:|:-------------------------:
+|![](https://i.ibb.co/P6rPpZP/color-mosaic.jpg)  |  ![](https://i.ibb.co/PxmjHHp/color-mosaic-iter-1-win-27.jpg)|
+|![](https://i.ibb.co/tK2PrjP/document.png)  |  ![](https://i.ibb.co/WBZtHRp/document-iter-2-win-7.jpg)|
+
 ## References
 
 [1] Wang, B. and Chen, C.P., 2019, September. An effective background estimation method for shadows removal of document images. In 2019 IEEE International Conference on Image Processing (ICIP) (pp. 3611-3615). IEEE.
