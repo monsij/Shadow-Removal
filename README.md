@@ -9,7 +9,6 @@
 |![](https://i.ibb.co/P6rPpZP/color-mosaic.jpg)  |  ![](https://i.ibb.co/PxmjHHp/color-mosaic-iter-1-win-27.jpg)|
 |![](https://i.ibb.co/tK2PrjP/document.png)  |  ![](https://i.ibb.co/WBZtHRp/document-iter-2-win-7.jpg)|
 
-
 ## Contributors
 
 [Monsij Biswal](https://github.com/monsij) & [Swetha Pillai](https://github.com/spillai20)
