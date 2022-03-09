@@ -2,6 +2,8 @@
 output/
 demo/
 .DS_Store
+notebooks/RunMe_Iterative-Copy1.ipynb
+notebooks/RunMe_Jian-Copy1.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
