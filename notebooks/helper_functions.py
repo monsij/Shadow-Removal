@@ -7,13 +7,29 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
 from IPython.display import clear_output
+from PIL import Image
+from skimage import color,filters,transform,io
 
 
-def plot_img(img,title):
+
+def load_img(path):
+    img = Image.open(path)
+    ip_img = np.array(img)
+    return ip_img
+
+
+def plot_img(img,title,r_lim=None, c_lim=None):
     """Show the image with appropriate changes"""
     
     f,ax = plt.subplots(1,1, figsize=(5,5))
-    ax.imshow(img)
+    if r_lim is not None and c_lim is not None:
+        ax.imshow(img[:r_lim,:c_lim,:])
+    elif r_lim is not None and c_lim is None:
+        ax.imshow(img[:r_lim,:,:])
+    elif r_lim is None and c_lim is not None:
+        ax.imshow(img[:,:c_lim,:])
+    else:
+        ax.imshow(img)
     ax.set_title(title)
     ax.axis('off')
     f.tight_layout()
@@ -21,10 +37,8 @@ def plot_img(img,title):
 
     return f, ax
 
-    
 
-
-def show_img_compare(img_1, img_2, title1, title2):
+def show_img_compare(img_1, img_2, title1, title2, r_lim=None, c_lim=None,img_2_binary=False):
     """Show the comparison of two images.
 
     Input
@@ -37,11 +51,23 @@ def show_img_compare(img_1, img_2, title1, title2):
     Two image plots are shown side by side.
     """
     f, ax = plt.subplots(1, 2, figsize=(8, 8))
-    ax[0].imshow(img_1)
+    if r_lim==None:
+        ax[0].imshow(img_1)
+    else:
+        ax[0].imshow(img_1[:r_lim,:c_lim])
     ax[0].set_title(title1)
     ax[0].axis('off')
-
-    ax[1].imshow(img_2)
+    
+    if r_lim==None:
+        if img_2_binary:
+            ax[1].imshow(img_2, cmap='gray')
+        else:
+            ax[1].imshow(img_2)
+    else:
+        if img_2_binary:
+            ax[1].imshow(img_2[:r_lim,:c_lim], cmap='gray')
+        else:
+            ax[1].imshow(img_2[:r_lim,:c_lim])
     ax[1].set_title(title2)
     ax[1].axis('off')
 
@@ -59,6 +85,7 @@ def get_global_colour_1(image,is_0_255):
         global_col = global_col.astype(int)
     return global_col
 
+
 def get_global_colour_2(image,is_0_255):
     # Max pixel value for each channel  (Approach #2)
     global_col = np.zeros(image.shape)
@@ -68,7 +95,8 @@ def get_global_colour_2(image,is_0_255):
     if is_0_255:
         global_col = global_col.astype(int)
     return global_col
-    
+
+
 def get_global_colour_3(image,is_0_255):
     # Average of top 50 pixels   (Approach #3)
     global_col = np.zeros(image.shape)
@@ -89,6 +117,7 @@ def get_global_colour_3(image,is_0_255):
     if is_0_255:
         global_col = global_col.astype(int)
     return global_col
+
 
 def ratio_local_bg(ip_image, p, block_size, is_0_255):
     d = block_size//2
@@ -129,8 +158,48 @@ def ratio_local_bg_refined(I_local, ip_img, threshold, median_block_size, is_0_2
     if is_0_255:
         I_local_refined = I_local_refined.astype(int)
     return I_local_refined
+
+
+def generate_deshadow(ip_img, I_local, I_global, is_0_255):
+    shadow_map = I_local / I_global #mostly decimals < 1
     
+    # Preventing division by zero (see next step)
+    zero_loc = np.where(shadow_map[:,:,:]==0)
+    shadow_map[zero_loc] = 1  # change maybe
+    I_deshadow = ip_img / shadow_map
+    
+    if is_0_255:
+        I_deshadow = I_deshadow.astype(int).clip(0,255) #change maybe for [0-1]
+    return I_deshadow
+
+
+def estimate_shading_reflectance(ip_img, binary_img, window_size):
+    """Works for image scaled to 0-255"""
+    d = window_size//2
+    shadow_map = np.zeros(ip_img.shape)
+    m = ip_img.shape[0]
+    n = ip_img.shape[1]
+    
+    for channel in range(3):
+        print("Evaluating for color channel:",channel+1)
+        for row in tqdm(range(m)):
+            for col in range(n):
+                if binary_img[row, col] == 1:
+                    shadow_map[row, col, channel] = ip_img[row, col, channel]
+                else:
+                    window = ip_img[max(row-d,0):min(row+d+1,m-1), max(col-d,0):min(col+d+1,n-1), channel]
+                    shadow_map[row][col][channel] = np.mean(window)
+        clear_output(wait=True)
+    shadow_map = shadow_map.astype(np.uint8)
+    
+    op_img = ip_img / shadow_map
+    op_img = op_img.clip(0,1)
+    op_img = np.round(op_img*255.0).astype(np.uint8)
 
     
+    op_img_gray = color.rgb2gray(op_img)
+    threshold_mask = filters.threshold_local(op_img_gray, block_size=501)
+    op_binary_image = op_img_gray > threshold_mask
     
+    return op_img, op_binary_image
     
