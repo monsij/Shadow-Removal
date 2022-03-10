@@ -12,6 +12,10 @@ from skimage import color,filters,transform,io
 
 
 
+##### General functions #####
+
+
+
 def load_img(path):
     img = Image.open(path)
     ip_img = np.array(img)
@@ -77,6 +81,11 @@ def show_img_compare(img_1, img_2, title1, title2, r_lim=None, c_lim=None,img_2_
     return f, ax
 
 
+
+##### Functions for approach-1 #####
+
+
+
 def get_global_colour_1(image,is_0_255):
     # Global average over each channel  (Approach #1)  
     global_col = np.zeros(image.shape)
@@ -119,7 +128,7 @@ def get_global_colour_3(image,is_0_255):
     return global_col
 
 
-def ratio_local_bg(ip_image, p, block_size, is_0_255):
+def get_local_bg(ip_image, p, block_size, is_0_255):
     d = block_size//2
     m = ip_image.shape[0]
     n = ip_image.shape[1]
@@ -138,7 +147,7 @@ def ratio_local_bg(ip_image, p, block_size, is_0_255):
     return I_local
 
 
-def ratio_local_bg_refined(I_local, ip_img, threshold, median_block_size, is_0_255):
+def get_local_bg_refined(I_local, ip_img, threshold, median_block_size, is_0_255):
     median_d = median_block_size//2
     t = threshold
     I_local_refined = np.zeros(I_local.shape)
@@ -173,6 +182,11 @@ def generate_deshadow(ip_img, I_local, I_global, is_0_255):
     return I_deshadow
 
 
+
+##### Function for approach-3 #####
+
+
+
 def estimate_shading_reflectance(ip_img, binary_img, window_size):
     """Works for image scaled to 0-255"""
     d = window_size//2
@@ -202,4 +216,3 @@ def estimate_shading_reflectance(ip_img, binary_img, window_size):
     op_binary_image = op_img_gray > threshold_mask
     
     return op_img, op_binary_image
-    
