@@ -17,14 +17,35 @@ from skimage import color,filters,transform,io
 
 
 def load_img(path):
+    """Returns the numpy array after loading image
+
+    Input
+    ----------
+    path: str
+
+    Output
+    ----------
+    image: numpy.ndarray
+    """
     img = Image.open(path)
-    ip_img = np.array(img)
-    return ip_img
+    image = np.array(img)
+    return image
 
 
 def plot_img(img,title,r_lim=None, c_lim=None):
-    """Show the image with appropriate changes"""
+    """Plots single image with title (crop if specified)
     
+    Input
+    ----------
+    img,img_2: numpy.ndarray
+    title: str
+    r_lim: int
+    c_lim: int
+
+    Output
+    ----------
+    f, ax = Figure, axes.Axes
+    """
     f,ax = plt.subplots(1,1, figsize=(5,5))
     if r_lim is not None and c_lim is not None:
         ax.imshow(img[:r_lim,:c_lim,:])
@@ -38,21 +59,20 @@ def plot_img(img,title,r_lim=None, c_lim=None):
     ax.axis('off')
     f.tight_layout()
     plt.show()
-
     return f, ax
 
 
 def show_img_compare(img_1, img_2, title1, title2, r_lim=None, c_lim=None,img_2_binary=False):
-    """Show the comparison of two images.
+    """Plots the side-by-side comparison of two images (crop both equally if specified). Supports cmap=gray for img_2
 
     Input
     ----------
-    img_1,img_2: numpy array
+    img_1,img_2: numpy.ndarray
     title_1,title_2: str
 
     Output
     ----------
-    Two image plots are shown side by side.
+    f, ax = Figure, axes.Axes
     """
     f, ax = plt.subplots(1, 2, figsize=(8, 8))
     if r_lim==None:
@@ -77,7 +97,6 @@ def show_img_compare(img_1, img_2, title1, title2, r_lim=None, c_lim=None,img_2_
 
     f.tight_layout()
     plt.show()
-
     return f, ax
 
 
@@ -87,7 +106,18 @@ def show_img_compare(img_1, img_2, title1, title2, r_lim=None, c_lim=None,img_2_
 
 
 def get_global_colour_1(image,is_0_255):
-    # Global average over each channel  (Approach #1)  
+    """Returns global color
+    Algorithm: Sets global color over each channel equal to corresponding mean pixel intensities.
+
+    Input
+    ----------
+    image: numpy.ndarray
+    is_0_255: bool
+
+    Output
+    ----------
+    global_col: numpy.ndarray
+    """ 
     global_col = np.zeros(image.shape)
     global_col[:,:,0], global_col[:,:,1], global_col[:,:,2] = np.average(image, axis=(0,1))
     if is_0_255:
@@ -96,7 +126,18 @@ def get_global_colour_1(image,is_0_255):
 
 
 def get_global_colour_2(image,is_0_255):
-    # Max pixel value for each channel  (Approach #2)
+    """Returns global color
+    Algorithm: Sets global color over each channel equal to corresponding max pixel intensity.
+
+    Input
+    ----------
+    image: numpy.ndarray
+    is_0_255: bool
+
+    Output
+    ----------
+    global_col: numpy.ndarray
+    """
     global_col = np.zeros(image.shape)
     global_col[:,:,0] = np.ones(image.shape[0:2]) * np.max(image[:,:,0])
     global_col[:,:,1] = np.ones(image.shape[0:2]) * np.max(image[:,:,1])
@@ -107,7 +148,18 @@ def get_global_colour_2(image,is_0_255):
 
 
 def get_global_colour_3(image,is_0_255):
-    # Average of top 50 pixels   (Approach #3)
+    """Returns global color
+    Algorithm: Sets global color over each channel equal to corresponding mean of top 50 pixels with dominant intensity.
+
+    Input
+    ----------
+    image: numpy.ndarray
+    is_0_255: bool
+
+    Output
+    ----------
+    global_col: numpy.ndarray
+    """
     global_col = np.zeros(image.shape)
 
     # Extracting dominant pixels
@@ -128,10 +180,24 @@ def get_global_colour_3(image,is_0_255):
     return global_col
 
 
-def get_local_bg(ip_image, p, block_size, is_0_255):
+def get_local_bg(image, p, block_size, is_0_255):
+    """Returns local color
+    Algorithm: Computes local background color using [1]
+
+    Input
+    ----------
+    image: numpy.ndarray
+    p: integer (0,1] (see ref.)
+    block_size: integer (odd only)
+    is_0_255: bool
+
+    Output
+    ----------
+    I_local: numpy.ndarray
+    """
     d = block_size//2
-    m = ip_image.shape[0]
-    n = ip_image.shape[1]
+    m = image.shape[0]
+    n = image.shape[1]
     
     I_local = np.zeros((m,n,3))
     
@@ -139,7 +205,7 @@ def get_local_bg(ip_image, p, block_size, is_0_255):
         print("Evaluating for color channel:",channel+1)
         for row in tqdm(range(m)):
             for col in range(n):
-                block_intensities = ip_image[max(row-d,0):min(row+d+1,m-1),max(col-d,0):min(col+d+1,n-1),channel].flatten()
+                block_intensities = image[max(row-d,0):min(row+d+1,m-1),max(col-d,0):min(col+d+1,n-1),channel].flatten()
                 I_local[row][col][channel] = np.percentile(block_intensities,100*p)
         clear_output(wait=True)
     if is_0_255:
@@ -147,20 +213,35 @@ def get_local_bg(ip_image, p, block_size, is_0_255):
     return I_local
 
 
-def get_local_bg_refined(I_local, ip_img, threshold, median_block_size, is_0_255):
+def get_local_bg_refined(I_local, image, threshold, median_block_size, is_0_255):
+    """Returns refined local color
+    Algorithm: Computes refined local background color using [1]
+
+    Input
+    ----------
+    I_local: numpy.ndarray [returned from get_local_bg()] 
+    image: numpy.ndarray
+    threshold: integer (generally less than 1)
+    median_block_size: integer (odd only)
+    is_0_255: bool
+
+    Output
+    ----------
+    I_local_refined: numpy.ndarray
+    """
     median_d = median_block_size//2
     t = threshold
     I_local_refined = np.zeros(I_local.shape)
     
-    m = ip_img.shape[0]
-    n = ip_img.shape[1]
+    m = image.shape[0]
+    n = image.shape[1]
     
     for channel in range(3):
         print("Evaluating for color channel:",channel+1)
         for row in tqdm(range(m)):
             for col in range(n):
-                if I_local[row][col][channel] <= (1+t)*ip_img[row][col][channel] and (1-t)*ip_img[row][col][channel] <= I_local[row][col][channel]:
-                    I_local_refined[row][col][channel] = ip_img[row][col][channel]
+                if I_local[row][col][channel] <= (1+t)*image[row][col][channel] and (1-t)*image[row][col][channel] <= I_local[row][col][channel]:
+                    I_local_refined[row][col][channel] = image[row][col][channel]
                 else:
                     I_local_refined[row][col][channel] = np.median(I_local[max(row-median_d,0):min(row+median_d+1,m-1),max(col-median_d,0):min(col+median_d+1,n-1),channel].flatten())
         clear_output(wait=True)
@@ -169,13 +250,27 @@ def get_local_bg_refined(I_local, ip_img, threshold, median_block_size, is_0_255
     return I_local_refined
 
 
-def generate_deshadow(ip_img, I_local, I_global, is_0_255):
+def generate_deshadow(image, I_local, I_global, is_0_255):
+    """Returns deshadowed image
+    Algorithm: Estimates shadow map as I_local/I_global
+
+    Input
+    ----------
+    image: numpy.ndarray
+    I_local: numpy.ndarray
+    I_global: numpy.ndarray
+    is_0_255: bool
+
+    Output
+    ----------
+    I_deshadow: numpy.ndarray
+    """
     shadow_map = I_local / I_global #mostly decimals < 1
     
     # Preventing division by zero (see next step)
     zero_loc = np.where(shadow_map[:,:,:]==0)
-    shadow_map[zero_loc] = 1  # change maybe
-    I_deshadow = ip_img / shadow_map
+    shadow_map[zero_loc] = 1
+    I_deshadow = image / shadow_map
     
     if is_0_255:
         I_deshadow = I_deshadow.astype(int).clip(0,255) #change maybe for [0-1]
@@ -187,26 +282,40 @@ def generate_deshadow(ip_img, I_local, I_global, is_0_255):
 
 
 
-def estimate_shading_reflectance(ip_img, binary_img, window_size):
-    """Works for image scaled to 0-255"""
+def estimate_shading_reflectance(image, binary_img, window_size):
+    """Returns reflectance and corresponding thresholded image after a single iteration
+    Algorithm: Estimates reflectance and shading components using block average operations [3]
+    Works only if pixel intensities in the range [0-255]
+
+    Input
+    ----------
+    image: numpy.ndarray
+    binary_img: numpy.ndarray
+    window_size: int (odd only)
+
+    Output
+    ----------
+    op_img: numpy.ndarray
+    op_binary_img: numpy.ndarray
+    """
     d = window_size//2
-    shadow_map = np.zeros(ip_img.shape)
-    m = ip_img.shape[0]
-    n = ip_img.shape[1]
+    shadow_map = np.zeros(image.shape)
+    m = image.shape[0]
+    n = image.shape[1]
     
     for channel in range(3):
         print("Evaluating for color channel:",channel+1)
         for row in tqdm(range(m)):
             for col in range(n):
                 if binary_img[row, col] == 1:
-                    shadow_map[row, col, channel] = ip_img[row, col, channel]
+                    shadow_map[row, col, channel] = image[row, col, channel]
                 else:
-                    window = ip_img[max(row-d,0):min(row+d+1,m-1), max(col-d,0):min(col+d+1,n-1), channel]
+                    window = image[max(row-d,0):min(row+d+1,m-1), max(col-d,0):min(col+d+1,n-1), channel]
                     shadow_map[row][col][channel] = np.mean(window)
         clear_output(wait=True)
     shadow_map = shadow_map.astype(np.uint8)
     
-    op_img = ip_img / shadow_map
+    op_img = image / shadow_map
     op_img = op_img.clip(0,1)
     op_img = np.round(op_img*255.0).astype(np.uint8)
 
