@@ -1,5 +1,6 @@
 ## Getting Started
 Click on the binder badge below to begin !
+
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/monsij/Shadow-Removal/HEAD)
 
 
