@@ -10,7 +10,6 @@ Click on the binder badge below to begin !
 1. `./notebooks`: Contains all notebooks including **final report**.
 2. `./dataset`: Images used for this project [1,2,3].
 3. `./assets`: Image resources used for class presentation.
-4. `./output`: All outputs can be reproduced from the notebooks. This folder contains some generated results.
 
 
 ## Demo
